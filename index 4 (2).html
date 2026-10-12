@@ -1,0 +1,637 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le poids du passé</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&display=swap">
+<style>
+/* Layout : une colonne étroite façon application, un écran = une action.
+   Le temps investi se lit en mois : 1 case = 1 mois, 1 ligne = 1 an. */
+:root{
+  --bg:#eceef3;
+  --surface:#ffffff;
+  --ink:#11131a;
+  --muted:#565d71;
+  --line:#d8dce5;
+  --blue:#2f3cf0;
+  --on-blue:#ffffff;
+  --blue-soft:#e2e5ff;
+  --blue-text:#2330c9;
+  --cell:#d3d7e1;
+  --cell-on:#11131a;
+  --amber:#8f4c00;
+  --amber-soft:#fbefdc;
+  --font:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0c0e13;--surface:#161921;--ink:#eef0f6;--muted:#9aa1b4;--line:#272c37;
+    --blue:#7480ff;--on-blue:#0c0e13;--blue-soft:#1d2253;--blue-text:#aab1ff;
+    --cell:#262b36;--cell-on:#eef0f6;--amber:#f0b45e;--amber-soft:#2a2114;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0c0e13;--surface:#161921;--ink:#eef0f6;--muted:#9aa1b4;--line:#272c37;
+  --blue:#7480ff;--on-blue:#0c0e13;--blue-soft:#1d2253;--blue-text:#aab1ff;
+  --cell:#262b36;--cell-on:#eef0f6;--amber:#f0b45e;--amber-soft:#2a2114;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--font);font-stretch:100%;
+  font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  min-height:100vh;display:flex;flex-direction:column;
+}
+.wrap{width:100%;max-width:720px;margin-inline:auto;padding-inline:20px}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:6px}
+
+/* ---------- Typo ---------- */
+.display,h1,h2{
+  font-family:var(--font);font-stretch:125%;font-weight:800;letter-spacing:-.025em;
+  line-height:1.04;margin:0;text-wrap:balance;
+}
+h1{font-size:clamp(44px,9vw,76px)}
+h2{font-size:clamp(30px,5.6vw,46px)}
+h1:focus,h2:focus{outline:none}
+p{margin:0}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.lead{font-size:clamp(19px,2.6vw,22px);line-height:1.45;max-width:34ch}
+.muted{color:var(--muted)}
+.hl{color:var(--blue-text);white-space:nowrap}
+
+/* ---------- En-tête ---------- */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg)}
+.bar{display:flex;align-items:center;gap:14px;min-height:68px;padding-block:12px}
+.back{
+  flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink);display:grid;place-items:center;cursor:pointer;padding:0;
+}
+.back:hover{border-color:var(--ink)}
+.back[hidden]{display:none}
+.progress{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0}
+.segs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.seg{height:4px;border-radius:4px;background:var(--line);overflow:hidden}
+.seg i{display:block;height:100%;width:0;background:var(--ink);transition:width .45s cubic-bezier(.2,.7,.2,1)}
+.progress-label{font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* ---------- Écrans ---------- */
+main{flex:1;padding-block:28px 88px}
+.screen{display:none}
+.screen.active{display:flex;flex-direction:column;gap:28px;animation:enter .4s cubic-bezier(.2,.7,.2,1) both}
+@keyframes enter{from{opacity:.001;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ---------- Boutons ---------- */
+.btn{
+  font:inherit;font-weight:700;font-size:17px;min-height:56px;padding:14px 30px;border-radius:999px;
+  border:0;background:var(--ink);color:var(--bg);cursor:pointer;align-self:flex-start;
+  display:inline-flex;align-items:center;gap:10px;transition:transform .15s ease, opacity .15s ease;
+}
+.btn:hover{opacity:.88}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink);opacity:1}
+
+/* ---------- Intro ---------- */
+.intro-head{display:flex;flex-direction:column;gap:22px;padding-top:12px}
+.plan{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.plan li{font-size:15px;font-weight:600;padding:8px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+
+/* ---------- Mois ---------- */
+.months{
+  margin:0;display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;
+  background:var(--surface);border-radius:24px;padding:24px;
+}
+.grid{display:grid;grid-template-columns:repeat(12,14px);gap:5px}
+.grid span{width:14px;height:14px;border-radius:4px;background:var(--cell);transition:background-color .25s ease, transform .25s ease}
+.grid span.on{background:var(--cell-on)}
+.count{display:flex;flex-direction:column;gap:6px;min-width:0}
+.count .num{font-stretch:125%;font-weight:800;font-size:clamp(56px,10vw,88px);line-height:.9;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.count .unit{font-weight:700;font-size:18px}
+.count .scale{font-size:14px;color:var(--muted)}
+.future{
+  display:flex;gap:14px;align-items:flex-start;padding:18px 20px;border-radius:18px;
+  background:var(--blue-soft);color:var(--ink);font-size:16px;
+}
+.future svg{flex:none;color:var(--blue-text);margin-top:1px}
+.future b{color:var(--blue-text)}
+
+.question{font-weight:700;font-size:20px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:-12px}
+.choice{
+  font:inherit;text-align:left;cursor:pointer;background:var(--surface);color:var(--ink);
+  border:1.5px solid var(--line);border-radius:20px;padding:20px;min-height:132px;
+  display:flex;flex-direction:column;gap:6px;transition:border-color .15s ease, background .15s ease, transform .15s ease;
+}
+.choice:hover{border-color:var(--ink)}
+.choice:active{transform:scale(.985)}
+.choice svg{margin-bottom:8px;color:var(--ink)}
+.choice .main{font-stretch:112%;font-weight:800;font-size:21px;letter-spacing:-.01em}
+.choice .sub{font-size:15px;color:var(--muted)}
+.choice[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-soft)}
+.choice[aria-pressed="true"] svg{color:var(--blue-text)}
+
+/* ---------- Miroir ---------- */
+.mirror{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch}
+.m-col{background:var(--surface);border-radius:24px;padding:22px 20px;display:flex;flex-direction:column;gap:16px;align-items:flex-start}
+.m-col .grid{grid-template-columns:repeat(12,8px);gap:3px}
+.m-col .grid span{width:8px;height:8px;border-radius:2px}
+.m-time{font-stretch:125%;font-weight:800;font-size:28px;letter-spacing:-.02em;line-height:1}
+.m-time small{display:block;font-stretch:100%;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.chip{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:17px;padding:10px 16px;border-radius:999px;margin-top:auto}
+.chip.stay{background:var(--bg);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.chip.switch{background:var(--blue);color:var(--on-blue)}
+.m-sign{display:grid;place-items:center;font-stretch:125%;font-weight:800;font-size:44px;color:var(--muted);min-width:36px}
+.future-row{font-size:15px;color:var(--muted);margin-top:-14px}
+.future-row b{color:var(--ink)}
+.verdict{display:flex;flex-direction:column;gap:12px;font-size:18px;max-width:58ch}
+.verdict .named{font-weight:800;color:var(--blue-text)}
+
+/* ---------- Comprendre ---------- */
+.stack{display:flex;flex-direction:column;gap:14px}
+.nuance{display:flex;gap:12px;background:var(--amber-soft);border-radius:18px;padding:16px 18px;font-size:16px}
+.nuance svg{flex:none;color:var(--amber);margin-top:2px}
+.nuance strong{color:var(--amber)}
+.tool{background:var(--blue);color:var(--on-blue);border-radius:28px;padding:32px 28px;display:flex;flex-direction:column;gap:16px}
+.tool .kicker{color:var(--on-blue);opacity:.75}
+.tool blockquote{margin:0;font-stretch:118%;font-weight:700;font-size:clamp(24px,4.2vw,34px);line-height:1.18;letter-spacing:-.015em;text-wrap:balance}
+
+.more-toggle{
+  font:inherit;font-size:16px;font-weight:700;color:var(--ink);background:transparent;border:0;
+  display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:6px 0;cursor:pointer;text-align:left;align-self:flex-start;
+}
+.more-toggle:hover span{text-decoration:underline;text-underline-offset:4px}
+.chev{flex:none;transition:transform .25s ease}
+[aria-expanded="true"] > .chev{transform:rotate(45deg)}
+.collapse{display:grid;grid-template-rows:0fr;visibility:hidden;transition:grid-template-rows .3s ease, visibility 0s linear .3s}
+.collapse.open{grid-template-rows:1fr;visibility:visible;transition:grid-template-rows .3s ease, visibility 0s}
+.collapse-inner{overflow:hidden;min-height:0}
+.acc{border-top:1px solid var(--line)}
+.acc-item{border-bottom:1px solid var(--line)}
+.acc-h{margin:0;font-size:inherit}
+.acc-btn{
+  font:inherit;font-size:17px;font-weight:700;color:var(--ink);background:transparent;border:0;width:100%;
+  display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;padding:18px 0;min-height:56px;cursor:pointer;
+}
+.acc-btn .chev{color:var(--muted)}
+.acc-body{padding:0 0 20px;font-size:16px;color:var(--muted);display:flex;flex-direction:column;gap:10px;max-width:60ch}
+.qs{margin:0;padding-left:20px;color:var(--ink)}
+.qs li{margin-bottom:8px}
+.small{font-size:14px;font-style:italic}
+.cite{font-size:13px;border-top:1px solid var(--line);padding-top:10px}
+
+.field-label{display:block;font-weight:700;font-size:18px}
+textarea{
+  width:100%;min-height:130px;font:inherit;font-size:17px;color:var(--ink);background:var(--surface);
+  border:1.5px solid var(--line);border-radius:18px;padding:16px 18px;resize:vertical;
+}
+textarea:focus-visible{border-color:var(--blue);outline:none;box-shadow:0 0 0 4px var(--blue-soft)}
+.hint{font-size:14px;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.status{font-size:15px;font-weight:700;color:var(--blue-text);min-height:1.5em}
+.end{border-top:1px solid var(--line);padding-top:28px}
+
+@media (max-width:560px){
+  .choices{grid-template-columns:1fr}
+  .choice{min-height:0}
+  .months{grid-template-columns:1fr;gap:20px}
+  .mirror{grid-template-columns:1fr}
+  .m-sign{font-size:34px;min-height:0}
+  .future-row{margin-top:-8px}
+  .btn{align-self:stretch;justify-content:center}
+  .row .btn{flex:1}
+}
+/* ---------- Effet de remplissage (survol sur ordinateur, toucher sur mobile) ---------- */
+.btn{
+  background:linear-gradient(var(--blue),var(--blue)) left / 0% 100% no-repeat, var(--ink);
+  transition:background-size .35s cubic-bezier(.2,.7,.2,1), color .2s ease, transform .15s ease;
+}
+.btn:hover,.btn:active{background-size:100% 100%;opacity:1}
+.btn.ghost{background:linear-gradient(var(--ink),var(--ink)) left / 0% 100% no-repeat, transparent}
+.btn.ghost:hover,.btn.ghost:active{background-size:100% 100%;color:var(--bg)}
+.choice{
+  background:linear-gradient(var(--blue-soft),var(--blue-soft)) left / 0% 100% no-repeat, var(--surface);
+  transition:background-size .35s cubic-bezier(.2,.7,.2,1), border-color .15s ease, transform .15s ease;
+}
+.choice:hover,.choice:active{background-size:100% 100%}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head><body>
+
+<header>
+  <div class="wrap bar">
+    <button type="button" class="back" id="backBtn" hidden aria-label="Retour à l'étape précédente">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="progress" role="progressbar" id="progressBar" aria-labelledby="progressLabel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="segs" aria-hidden="true"><span class="seg"><i></i></span><span class="seg"><i></i></span><span class="seg"><i></i></span><span class="seg"><i></i></span></div>
+      <span class="progress-label" id="progressLabel">Étape 1 sur 4</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="app">
+
+  <!-- 1 · La rencontre -->
+  <section class="screen" data-step="intro" aria-labelledby="t-intro">
+    <div class="intro-head">
+      <p class="kicker">Environ 3 minutes · il n'y a pas de note</p>
+      <h1 id="t-intro" tabindex="-1">Voici Claire.</h1>
+      <p class="lead">Elle n'aime plus son métier. Une autre voie l'attend, avec de meilleures perspectives.</p>
+      <p class="lead">Vous allez l'aider à décider, <strong>deux fois</strong>.</p>
+    </div>
+    <ul class="plan" aria-label="Déroulé">
+      <li>2 décisions</li><li>1 miroir</li><li>1 question à emporter</li>
+    </ul>
+    <button type="button" class="btn" data-action="start">Commencer
+      <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </section>
+
+  <!-- 2a · Décision 1 -->
+  <section class="screen" data-step="case1" aria-labelledby="t-case1">
+    <p class="kicker">Décision 1 sur 2</p>
+    <h2 id="t-case1" tabindex="-1" style="margin-top:-16px">Claire est dans son métier actuel depuis <span class="hl">6&nbsp;mois</span>.</h2>
+    <figure class="months">
+      <div class="grid" data-filled="6" aria-hidden="true"></div>
+      <figcaption class="count"><span class="num">6</span><span class="unit">mois déjà investis</span><span class="scale">1 case = 1 mois · 1 ligne = 1 an</span></figcaption>
+    </figure>
+    <div class="future">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 11h16M14 6l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span><b>À partir d'aujourd'hui, l'avenir est le même</b> dans les deux décisions : mêmes perspectives, mêmes risques, même situation.</span>
+    </div>
+    <p class="question" id="q-case1">Que lui conseillez-vous&nbsp;?</p>
+    <div class="choices" role="group" aria-labelledby="q-case1">
+      <button type="button" class="choice" data-case="case1" data-value="stay" aria-pressed="false">
+        <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M4 14h20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M24 8v12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <span class="main">Poursuivre</span><span class="sub">Rester dans son métier actuel</span>
+      </button>
+      <button type="button" class="choice" data-case="case1" data-value="switch" aria-pressed="false">
+        <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M4 20h6c5 0 6-12 12-12h2M19 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="main">Changer de voie</span><span class="sub">Partir vers la nouvelle voie</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- 2b · Décision 2 -->
+  <section class="screen" data-step="case2" aria-labelledby="t-case2">
+    <p class="kicker">Décision 2 sur 2</p>
+    <h2 id="t-case2" tabindex="-1" style="margin-top:-16px">Claire est dans son métier actuel depuis <span class="hl">10&nbsp;ans</span>.</h2>
+    <figure class="months">
+      <div class="grid" data-filled="120" aria-hidden="true"></div>
+      <figcaption class="count"><span class="num">120</span><span class="unit">mois déjà investis</span><span class="scale">1 case = 1 mois · 1 ligne = 1 an</span></figcaption>
+    </figure>
+    <div class="future">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 11h16M14 6l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span><b>À partir d'aujourd'hui, l'avenir est le même</b> dans les deux décisions : mêmes perspectives, mêmes risques, même situation.</span>
+    </div>
+    <p class="question" id="q-case2">Que lui conseillez-vous&nbsp;?</p>
+    <div class="choices" role="group" aria-labelledby="q-case2">
+      <button type="button" class="choice" data-case="case2" data-value="stay" aria-pressed="false">
+        <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M4 14h20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M24 8v12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <span class="main">Poursuivre</span><span class="sub">Rester dans son métier actuel</span>
+      </button>
+      <button type="button" class="choice" data-case="case2" data-value="switch" aria-pressed="false">
+        <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M4 20h6c5 0 6-12 12-12h2M19 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="main">Changer de voie</span><span class="sub">Partir vers la nouvelle voie</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- 3 · Le miroir -->
+  <section class="screen" data-step="mirror" aria-labelledby="t-mirror">
+    <p class="kicker">Vos deux conseils</p>
+    <h2 id="t-mirror" tabindex="-1" style="margin-top:-16px">Regardez vos réponses.</h2>
+    <div class="mirror">
+      <div class="m-col">
+        <div class="grid" data-filled="6" data-static aria-hidden="true"></div>
+        <p class="m-time"><small>Déjà investi</small>6 mois</p>
+        <div id="m-ans1"></div>
+      </div>
+      <div class="m-sign" aria-hidden="true" id="m-sign">≠</div>
+      <div class="m-col">
+        <div class="grid" data-filled="120" data-static aria-hidden="true"></div>
+        <p class="m-time"><small>Déjà investi</small>10 ans</p>
+        <div id="m-ans2"></div>
+      </div>
+    </div>
+    <p class="future-row">Avenir de Claire : <b>identique</b> dans les deux cas.</p>
+    <div class="verdict" id="verdict" aria-live="polite"></div>
+    <button type="button" class="btn" data-action="understand">Comprendre
+      <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </section>
+
+  <!-- 4 · Comprendre -->
+  <section class="screen" data-step="learn" aria-labelledby="t-learn">
+    <p class="kicker">Comprendre</p>
+    <h2 id="t-learn" tabindex="-1" style="margin-top:-16px">Le poids du passé</h2>
+
+    <div class="stack">
+      <p class="lead" style="max-width:40ch">Plus on a investi de temps, d'argent ou d'efforts dans une voie, plus il est difficile de l'abandonner, même quand l'avenir ne le justifie plus.</p>
+      <p class="muted">Notre esprit déteste l'idée de « perdre » ce qui a déjà été engagé.</p>
+      <div class="nuance">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5 18 17H2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 8v4.2M10 14.6v.1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+        <span><strong>Le passé n'est pas inutile.</strong> Les compétences, les relations ou l'expérience acquises peuvent légitimement compter. Le but n'est pas d'effacer son passé, mais de ne pas le laisser décider seul.</span>
+      </div>
+    </div>
+
+    <div class="tool">
+      <p class="kicker">La question qui aide à décider</p>
+      <blockquote id="toolQuestion">« Si je partais de zéro aujourd'hui, en sachant ce que je sais, est-ce que je choisirais encore cette voie&nbsp;? »</blockquote>
+    </div>
+
+    <div class="stack" style="gap:6px">
+      <button type="button" class="more-toggle" id="moreToggle" aria-expanded="false" aria-controls="morePanel">
+        <span>Pour aller plus loin : comprendre ce biais</span>
+        <svg class="chev" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 3.5v11M3.5 9h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="collapse" id="morePanel">
+        <div class="collapse-inner">
+          <div class="acc">
+            <div class="acc-item">
+              <h3 class="acc-h"><button type="button" class="acc-btn" id="acc-b1" aria-expanded="false" aria-controls="acc-p1">
+                <span>Pourquoi notre passé influence-t-il nos décisions&nbsp;?</span>
+                <svg class="chev" width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 3.5v11M3.5 9h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button></h3>
+              <div class="collapse" id="acc-p1" role="region" aria-labelledby="acc-b1"><div class="collapse-inner"><div class="acc-body">
+                <p>Quand nous avons consacré beaucoup de temps, d'argent ou d'énergie à quelque chose, nous avons parfois du mal à y renoncer.</p>
+                <p>Abandonner peut donner l'impression que tous ces efforts ont été inutiles.</p>
+                <p>Pourtant, continuer ne permet pas de récupérer ce qui a déjà été dépensé. Ce qui compte, c'est ce que chaque option peut encore nous apporter.</p>
+              </div></div></div>
+            </div>
+            <div class="acc-item">
+              <h3 class="acc-h"><button type="button" class="acc-btn" id="acc-b2" aria-expanded="false" aria-controls="acc-p2">
+                <span>Un exemple dans la vie professionnelle</span>
+                <svg class="chev" width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 3.5v11M3.5 9h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button></h3>
+              <div class="collapse" id="acc-p2" role="region" aria-labelledby="acc-b2"><div class="collapse-inner"><div class="acc-body">
+                <p>Vous travaillez depuis 12 ans dans un secteur qui ne vous convient plus.</p>
+                <p>Une nouvelle opportunité se présente, avec des perspectives intéressantes.</p>
+                <p>Vous hésitez : «&nbsp;Après toutes ces années, ce serait dommage de partir.&nbsp;»</p>
+                <p>Cette pensée peut révéler l'influence des coûts irrécupérables.</p>
+                <p>Mais votre expérience acquise reste précieuse : elle peut être transférable et doit être prise en compte dans votre décision.</p>
+              </div></div></div>
+            </div>
+            <div class="acc-item">
+              <h3 class="acc-h"><button type="button" class="acc-btn" id="acc-b3" aria-expanded="false" aria-controls="acc-p3">
+                <span>Comment reconnaître ce biais&nbsp;?</span>
+                <svg class="chev" width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 3.5v11M3.5 9h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button></h3>
+              <div class="collapse" id="acc-p3" role="region" aria-labelledby="acc-b3"><div class="collapse-inner"><div class="acc-body">
+                <ul class="qs">
+                  <li>«&nbsp;Est-ce que je continue surtout parce que j'ai déjà beaucoup investi&nbsp;?&nbsp;»</li>
+                  <li>«&nbsp;Si je découvrais cette situation aujourd'hui, ferais-je le même choix&nbsp;?&nbsp;»</li>
+                  <li>«&nbsp;Quels bénéfices et quels risques chaque option présente-t-elle pour mon avenir&nbsp;?&nbsp;»</li>
+                </ul>
+                <p class="small">Ces questions sont des pistes de réflexion, pas un test psychologique.</p>
+              </div></div></div>
+            </div>
+            <div class="acc-item">
+              <h3 class="acc-h"><button type="button" class="acc-btn" id="acc-b4" aria-expanded="false" aria-controls="acc-p4">
+                <span>Ce que dit la recherche</span>
+                <svg class="chev" width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 3.5v11M3.5 9h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button></h3>
+              <div class="collapse" id="acc-p4" role="region" aria-labelledby="acc-b4"><div class="collapse-inner"><div class="acc-body">
+                <p>Le biais des coûts irrécupérables est un phénomène étudié en psychologie de la décision et en économie comportementale.</p>
+                <p>Il désigne la tendance à laisser des investissements passés, qui ne peuvent plus être récupérés, influencer des décisions actuelles.</p>
+                <p>Des travaux classiques, notamment ceux d'Arkes et Blumer (1985), ont étudié ce phénomène.</p>
+                <p>Il peut être lié à plusieurs mécanismes psychologiques, notamment la difficulté à accepter une perte, mais il ne se confond pas avec l'aversion à la perte.</p>
+                <p class="cite">Arkes, H. R., &amp; Blumer, C. (1985). The psychology of sunk cost. <i>Organizational Behavior and Human Decision Processes</i>, 35(1), 124-140.</p>
+              </div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <p class="kicker">Et vous&nbsp;?</p>
+      <label class="field-label" for="reflection">Une décision que vous hésitez à prendre en ce moment&nbsp;? Posez-vous la question ci-dessus.</label>
+      <p class="hint" id="reflectionHint">Facultatif. Ce que vous écrivez reste sur cet écran : rien n'est envoyé ni enregistré.</p>
+      <textarea id="reflection" aria-describedby="reflectionHint" placeholder="Par exemple : la décision, ce que je choisirais en partant de zéro…"></textarea>
+      <div class="row">
+        <button type="button" class="btn ghost" data-action="copy">Copier ma réflexion</button>
+        <span class="status" id="copyStatus" role="status" aria-live="polite"></span>
+      </div>
+      <div class="stack" id="fallback" hidden>
+        <label class="field-label" for="fallbackText" style="font-size:16px">La copie automatique n'est pas disponible. Sélectionnez le texte ci-dessous et copiez-le (Ctrl+C ou ⌘+C) :</label>
+        <textarea id="fallbackText" readonly></textarea>
+      </div>
+    </div>
+
+    <div class="end">
+      <button type="button" class="btn ghost" data-action="restart">Recommencer</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* État : uniquement en mémoire, jamais transmis ni stocké. */
+  var STEPS = ["intro", "case1", "case2", "mirror", "learn"];
+  var PROGRESS = {
+    intro:  { pct: 0,   segs: [100, 0, 0, 0],     label: "Étape 1 sur 4 · La rencontre" },
+    case1:  { pct: 25,  segs: [100, 50, 0, 0],    label: "Étape 2 sur 4 · Décision 1 sur 2" },
+    case2:  { pct: 50,  segs: [100, 100, 0, 0],   label: "Étape 2 sur 4 · Décision 2 sur 2" },
+    mirror: { pct: 75,  segs: [100, 100, 100, 0], label: "Étape 3 sur 4 · Le miroir" },
+    learn:  { pct: 100, segs: [100, 100, 100, 100], label: "Étape 4 sur 4 · Comprendre" }
+  };
+  var LABELS = { stay: "Poursuivre", switch: "Changer de voie" };
+  var state = { step: "intro", answers: { case1: null, case2: null } };
+
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* Grilles de mois : 120 cases (10 ans), 12 par ligne. */
+  $$(".grid").forEach(function (g) {
+    var html = "";
+    for (var i = 0; i < 120; i++) html += "<span></span>";
+    g.innerHTML = html;
+    if (g.hasAttribute("data-static")) fill(g, false);
+  });
+
+  function fill(grid, animate) {
+    var n = parseInt(grid.dataset.filled, 10);
+    var cells = grid.children;
+    var step = Math.min(40, 900 / n);
+    for (var i = 0; i < cells.length; i++) {
+      cells[i].classList.remove("on");
+      cells[i].style.transitionDelay = "0ms";
+    }
+    if (!animate || reduce) {
+      for (var j = 0; j < n; j++) cells[j].classList.add("on");
+      return;
+    }
+    void grid.offsetWidth;
+    for (var k = 0; k < n; k++) {
+      cells[k].style.transitionDelay = Math.round(150 + k * step) + "ms";
+      cells[k].classList.add("on");
+    }
+  }
+
+  function allowedStep(step) {
+    if ((step === "case2" || step === "mirror" || step === "learn") && !state.answers.case1) return "case1";
+    if ((step === "mirror" || step === "learn") && !state.answers.case2) return "case2";
+    return step;
+  }
+
+  function go(step, opts) {
+    step = allowedStep(step);
+    state.step = step;
+    $$(".screen").forEach(function (s) { s.classList.toggle("active", s.dataset.step === step); });
+
+    var p = PROGRESS[step];
+    $$(".seg i").forEach(function (el, i) { el.style.width = p.segs[i] + "%"; });
+    $("#progressBar").setAttribute("aria-valuenow", String(p.pct));
+    $("#progressLabel").textContent = p.label;
+    $("#backBtn").hidden = (step === "intro");
+
+    if (step === "case1" || step === "case2") {
+      syncChoices(step);
+      fill($('.screen[data-step="' + step + '"] .grid'), true);
+    }
+    if (step === "mirror") renderMirror();
+
+    window.scrollTo(0, 0);
+    if (!opts || opts.focus !== false) {
+      var h = $('.screen[data-step="' + step + '"] [tabindex="-1"]');
+      if (h) h.focus({ preventScroll: true });
+    }
+  }
+
+  function syncChoices(caseId) {
+    $$('.choice[data-case="' + caseId + '"]').forEach(function (b) {
+      b.setAttribute("aria-pressed", String(state.answers[caseId] === b.dataset.value));
+    });
+  }
+
+  function chip(value) {
+    return '<span class="chip ' + value + '">' + LABELS[value] + "</span>";
+  }
+
+  function renderMirror() {
+    var a1 = state.answers.case1, a2 = state.answers.case2;
+    $("#m-ans1").innerHTML = '<p class="kicker" style="margin-bottom:8px">Votre conseil</p>' + chip(a1);
+    $("#m-ans2").innerHTML = '<p class="kicker" style="margin-bottom:8px">Votre conseil</p>' + chip(a2);
+    var same = a1 === a2;
+    $("#m-sign").textContent = same ? "=" : "≠";
+    var v = $("#verdict");
+    if (!same) {
+      v.innerHTML =
+        "<p>Vous avez donné <strong>deux conseils différents</strong> pour une décision dont l'avenir était identique.</p>" +
+        "<p>La seule chose qui a changé, c'est le temps déjà investi. Or ce temps est déjà passé, quoi que Claire décide.</p>" +
+        '<p>Ce décalage porte un nom : <span class="named">le biais des coûts irrécupérables</span>. C\'est une explication possible, et très courante.</p>';
+    } else {
+      v.innerHTML =
+        "<p>Vous avez donné <strong>le même conseil</strong> dans les deux cas.</p>" +
+        "<p>C'est cohérent : l'avenir de Claire était identique, seul le temps déjà investi changeait.</p>" +
+        "<p>Pourtant, beaucoup de personnes répondent différemment selon le passé investi. Voici pourquoi.</p>";
+    }
+  }
+
+  /* ---------- Copie, avec solution de repli ---------- */
+  function buildCopyText() {
+    var q = "Si je partais de zéro aujourd'hui, en sachant ce que je sais, est-ce que je choisirais encore cette voie ?";
+    var r = $("#reflection").value.trim();
+    return r ? "La question qui aide à décider :\n" + q + "\n\nMa réflexion :\n" + r : q;
+  }
+  function showStatus(msg) { $("#copyStatus").textContent = msg; }
+  function legacyCopy(text) {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", "");
+      ta.style.position = "fixed"; ta.style.opacity = "0"; ta.style.top = "0";
+      document.body.appendChild(ta); ta.select();
+      var ok = document.execCommand && document.execCommand("copy");
+      document.body.removeChild(ta);
+      return !!ok;
+    } catch (e) { return false; }
+  }
+  function manualFallback(text) {
+    var box = $("#fallback"), ta = $("#fallbackText");
+    ta.value = text; box.hidden = false; ta.focus(); ta.select();
+    showStatus("");
+  }
+  function copy() {
+    var text = buildCopyText();
+    $("#fallback").hidden = true;
+    var done = function () { showStatus("✓ Copié"); setTimeout(function () { showStatus(""); }, 3000); };
+    var fail = function () { if (legacyCopy(text)) done(); else manualFallback(text); };
+    try {
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fail);
+      else fail();
+    } catch (e) { fail(); }
+  }
+
+  /* ---------- Pour aller plus loin ---------- */
+  function setOpen(btn, open) {
+    btn.setAttribute("aria-expanded", String(open));
+    document.getElementById(btn.getAttribute("aria-controls")).classList.toggle("open", open);
+  }
+  function closeAllAcc() { $$(".acc-btn").forEach(function (b) { setOpen(b, false); }); }
+  $("#moreToggle").addEventListener("click", function () {
+    var open = this.getAttribute("aria-expanded") !== "true";
+    setOpen(this, open);
+    if (!open) closeAllAcc();
+  });
+  $$(".acc-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var open = btn.getAttribute("aria-expanded") !== "true";
+      closeAllAcc();
+      setOpen(btn, open);
+    });
+  });
+
+  function restart() {
+    setOpen($("#moreToggle"), false);
+    closeAllAcc();
+    state.answers.case1 = null;
+    state.answers.case2 = null;
+    $("#reflection").value = "";
+    $("#fallbackText").value = "";
+    $("#fallback").hidden = true;
+    showStatus("");
+    $$(".choice").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+    go("intro");
+  }
+
+  function back() {
+    var i = STEPS.indexOf(state.step);
+    if (i > 0) go(STEPS[i - 1]);
+  }
+
+  document.addEventListener("click", function (e) {
+    var choice = e.target.closest(".choice");
+    if (choice) {
+      var c = choice.dataset.case;
+      state.answers[c] = choice.dataset.value;
+      syncChoices(c);
+      setTimeout(function () { go(c === "case1" ? "case2" : "mirror"); }, reduce ? 0 : 220);
+      return;
+    }
+    var a = e.target.closest("[data-action]");
+    if (!a) return;
+    switch (a.dataset.action) {
+      case "start": go("case1"); break;
+      case "understand": go("learn"); break;
+      case "copy": copy(); break;
+      case "restart": restart(); break;
+    }
+  });
+  $("#backBtn").addEventListener("click", back);
+
+  go("intro", { focus: false });
+  window.__module = { state: state };
+})();
+</script>
+</body></html>
